@@ -1,0 +1,118 @@
+---
+title: "COVID-19 Cases Pass 20,000.000 Worldwide"
+author: "David J Jackson"
+date: "8/11/2020"
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
+---
+
+```{r setup, include=FALSE,message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RSQLite)
+#source("../DATA/movavg.R")
+```
+
+```{r}
+rm(list=ls())
+source("../DATA/movavg.R")
+db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+```
+```{r}
+
+WSJ <- dbGetQuery(db,"Select * from ECDC;")
+WSJ$Reported <- as.Date(WSJ$Reported)
+summary(WSJ$Cases)
+summary(WSJ$Deaths)
+```
+```{r}
+WSJSC <- aggregate(Cases~Reported,data=WSJ,FUN=sum)
+wSJMC <- aggregate(Cases~Reported,data=WSJ,FUN=mean)
+```
+```{r}
+WSJSD <- aggregate(Deaths~Reported,data=WSJ,FUN=sum)
+WSJMD <- aggregate(Deaths~Reported,data=WSJ,FUN=mean)
+```
+
+### World COVID-19 Total Cases and Deaths by Date
+
+```{r}
+plot(WSJSC$Reported,WSJSC$Cases,type="l",main="Worldwide COVID-19 Cases by Day",
+     xlab="Date Reported",ylab="Total Cases")
+grid()
+
+plot(wSJMC$Reported,wSJMC$Cases,type="l",main="Worldwide COVID-19 Cases by Day",
+     xlab="Date Reported",ylab="Mean Daily Cases")
+grid()
+```
+```{r}
+plot(WSJSD$Reported,WSJSD$Deaths,type="l",main="Worldwide COVID-19 Deaths by Day",
+     xlab="Date Reported",ylab="Total Deaths")
+grid()
+plot(WSJMD$Reported,WSJMD$Deaths,type="l",main="Worldwide COVID-19 Deaths by Day",
+     xlab="Date Reported",ylab="Total Mean Deaths")
+grid()
+```
+
+### Calculate Weekly and Monthly Totals
+
+```{r}
+WSJ$Monthly <- as.Date(cut(WSJ$Reported,
+  breaks = "month"))
+WSJ$Weekly <- as.Date(cut(WSJ$Reported,
+  breaks = "week",
+  start.on.monday = FALSE)) # changes weekly break point to Sunday
+
+WSJWSC <- aggregate(Cases~Weekly,data=WSJ,FUN=sum)
+wSJWSD <- aggregate(Deaths~Weekly,data=WSJ,FUN=mean)
+```
+```{r}
+barplot(Cases~Weekly,data=WSJWSC,main="Woldwide Weekly COVID-19 Cases")
+barplot(Deaths~Weekly,data=wSJWSD,main="Woldwide Weekly COVID-19 Deaths")
+```
+```{r}
+WSJMSC <- aggregate(Cases~Monthly,data=WSJ,FUN=sum)
+wSJMSD <- aggregate(Deaths~Monthly,data=WSJ,FUN=mean)
+```
+```{r}
+barplot(Cases~Monthly,data=WSJMSC,main="Woldwide Monthly COVID-19 Cases")
+barplot(Deaths~Monthly,data=wSJMSD,main="Woldwide Monthly COVID-19 Deaths")
+```
+
+## Calculate and Plot 7  Day Moving Average for Cases and Deaths
+
+```{r}
+WSJSC$SMAC <- movingAverage(WSJSC$Cases,7)
+WSJSD$SMAD <- movingAverage(WSJSD$Deaths,7)
+```
+```{r}
+plot(WSJSC$Reported,WSJSC$SMAC,type="l",main="COVID-19 Cases W/ 7 day MA")
+plot(WSJSD$Reported,WSJSD$SMAD,type="l",main="COVID-19 Deaths W/ 7 day MA")
+```
+
+## Try and Calculate the differenct between yesterday and today
+
+```{r}
+WSJSC$lagged <- WSJSC$Cases - lag(WSJSC$Cases,1)
+```
+
+```{r}
+plot(WSJSC$Reported,WSJSC$lagged,type="l")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
