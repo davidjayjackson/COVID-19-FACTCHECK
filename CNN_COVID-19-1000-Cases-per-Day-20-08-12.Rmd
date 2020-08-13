@@ -62,8 +62,34 @@ Monthly_Cases <- aggregate(Cases~Monthly,US,FUN=sum)
 Monthly_Deaths <- aggregate(Deaths~Monthly,US,FUN=sum)
 ```
 ```{r}
-barplot(Cases ~Monthly,data=Monthly_Cases,main="Monthly Barplot of Cases")
+barplot(Cases ~Monthly,data=Monthly_Cases,main="Monthly Barplot of Total Cases")
 grid(col="black")
-barplot(Deaths ~Monthly,data=Monthly_Deaths,main="Monthly Barplot of Deaths")
+barplot(Deaths ~Monthly,data=Monthly_Deaths,main="Monthly Barplot of Total Deaths")
+grid(col="black")
+```
+
+### Weekly and Montly Mean COVID-19 Cases And Deaths
+
+```
+```{r}
+Weekly_Cases <- aggregate(Cases~Weekly,US,FUN=mean)
+Weekly_Deaths <- aggregate(Deaths~Weekly,US,FUN=mean)
+
+```
+```{r}
+barplot(Cases ~Weekly,data=Weekly_Cases,main="Weekly Barplot of Mean Cases")
+grid(col="black")
+barplot(Deaths ~Weekly,data=Weekly_Deaths,main="Weekly Barplot of Mean Deaths")
+grid(col="black")
+```
+```{r}
+
+Monthly_Cases <- aggregate(Cases~Monthly,US,FUN=mean)
+Monthly_Deaths <- aggregate(Deaths~Monthly,US,FUN=mean)
+```
+```{r}
+barplot(Cases ~Monthly,data=Monthly_Cases,main="Monthly Mean Barplot of Cases")
+grid(col="black")
+barplot(Deaths ~Monthly,data=Monthly_Deaths,main="Monthly Mean Barplot of Deaths")
 grid(col="black")
 ```
