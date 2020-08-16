@@ -40,7 +40,7 @@ lines(df$date,df$DMA,col="blue")
 ```
 ```{r}
 df$DRate <- df$new_deaths/df$new_cases
-plot(df$date,df$DRate,type="b",main="New York City Country Daily Death Rate",col="red")
+plot(df$date,df$DRate,type="l",main="New York City Country Daily Death Rate",col="red")
 ```
 ```{r}
 plot(df$date,df$TotalCases,type="l",main="New York City Contry Total Cases",col="red")
@@ -67,6 +67,25 @@ lines(df1$date,df1$SDMA,col="blue")
 ```
 ```{r}
 df1$DRate <- df1$new_deaths/df1$new_cases
-plot(df1$date,df1$DRate,type="b",main="New York StatesDaily Death Rate",col="red")
+plot(df1$date,df1$DRate,type="l",main="New York StatesDaily Death Rate",col="red")
 ```
 
+```{r}
+df$Monthly <- as.Date(cut(df$date,
+  breaks = "month"))
+df$Weekly <- as.Date(cut(df$date,
+  breaks = "week",
+  start.on.monday = FALSE))
+
+```
+```{r}
+Weekly_new_cases <- aggregate(new_cases~Weekly,df,FUN=sum)
+Weekly_new_deaths <- aggregate(new_deaths~Weekly,df,FUN=sum)
+
+```
+```{r}
+barplot(new_cases ~Weekly,data=Weekly_new_cases,main="New York City 's Weekly Barplot of Cases",xlab="Date",ylab="Cases")
+grid(col="black")
+barplot(new_deaths ~Weekly,data=Weekly_new_deaths,main="New York City's Weekly Barplot of Deaths",xlab="Date",ylab="Deaths")
+grid(col="black")
+```
