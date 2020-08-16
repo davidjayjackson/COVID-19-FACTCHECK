@@ -94,7 +94,7 @@ plot(WSJSD$Reported,WSJSD$SMAD,type="l",main="COVID-19 Deaths W/ 7 day MA")
 ## Try and Calculate the differenct between yesterday and today
 
 ```{r}
-WSJSC$lagged <- WSJSC$Cases - lag(WSJSC$Cases,1)
+WSJSC$lagged <- WSJSC$Cases - lag(WSJSC$Cases,k=1)
 ```
 
 ```{r}

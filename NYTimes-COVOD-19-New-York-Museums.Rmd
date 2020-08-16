@@ -1,0 +1,72 @@
+---
+title: 'NYTimes : Gov says Museums Opening'
+author: "David J Jackson"
+date: "8/15/2020"
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RSQLite)
+options(scipen=5)
+```
+
+## Pull in Some data for New York State and County Data
+
+```{r}
+rm(list=ls())
+source("../DATA/movavg.R")
+db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+df <- dbGetQuery(db,"select * from COUNTYDAILY;")
+df <- subset(df,county =="New York City" & new_cases >0 )
+df$date <- as.Date(df$date)
+str(df)
+df$CMA <- movingAverage(df$new_cases,14)
+df$DMA <- movingAverage(df$new_deaths,14)
+
+```
+
+### New York County and New York City
+
+```{r}
+plot(df$date,df$new_cases,type="b",main="New York City Country Daily Cases",col="red")
+lines(df$date,df$CMA,col="blue")
+plot(df$date,df$new_deaths,type="b",main="New York City Country Daily Deaths")
+lines(df$date,df$DMA,col="blue")
+
+```
+```{r}
+df$DRate <- df$new_deaths/df$new_cases
+plot(df$date,df$DRate,type="b",main="New York City Country Daily Death Rate",col="red")
+```
+```{r}
+plot(df$date,df$TotalCases,type="l",main="New York City Contry Total Cases",col="red")
+
+plot(df$date,df$TotalDeaths,type="l",main="New York City Contry Total Deaths",col="red")
+```
+```{r}
+db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+df1 <- dbGetQuery(db,"select * from STATESDAILY;")
+df1 <- subset(df1,state =="New York" & new_cases >0 )
+df1$date <- as.Date(df1$date)
+
+df1$SCMA <- movingAverage(df1$new_cases,14)
+df1$SDMA <- movingAverage(df1$new_deaths,14)
+str(df1)
+```
+
+```{r}
+plot(df1$date,df1$new_cases,type="b",main="New York State Daily Cases",col="red")
+lines(df1$date,df1$SCMA,col="blue")
+plot(df1$date,df1$new_deaths,type="b",main="New York State Daily Deaths")
+lines(df1$date,df1$SDMA,col="blue")
+
+```
+```{r}
+df1$DRate <- df1$new_deaths/df1$new_cases
+plot(df1$date,df1$DRate,type="b",main="New York StatesDaily Death Rate",col="red")
+```
+
