@@ -18,7 +18,7 @@ options(scipen=5)
 source("../DATA/movavg.R")
 db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
 df <- dbGetQuery(db,"select * from STATESDAILY")
-df <- subset(df,state =="Florida" & new_cases >0 )
+df <- subset(df,state =="Florida" & date >="2020-04-01" )
 df$date <- as.Date(df$date)
 summary(df$new_cases)
 summary(df$new_deaths)
@@ -76,3 +76,12 @@ grid(col="black")
 barplot(new_deaths ~Monthly,data=Monthly_Deaths,main="Spain's Monthly Total Deaths")
 grid(col="black")
 ```
+
+### Estimated Death Rate for Florida
+
+```{r}
+df$DRate <- df$death_rate * 100
+plot(df$date,df$DRate,type="l",main="Florida Estimated Death Rate")
+grid(col="black")
+```
+
