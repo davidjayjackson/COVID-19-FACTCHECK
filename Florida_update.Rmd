@@ -1,0 +1,78 @@
+---
+title: "Florida COVID-19 Update"
+author: "David J Jackson"
+date: "8/20/2020"
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RSQLite)
+options(scipen=5)
+```
+
+```{r}
+source("../DATA/movavg.R")
+db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+df <- dbGetQuery(db,"select * from STATESDAILY")
+df <- subset(df,state =="Florida" & new_cases >0 )
+df$date <- as.Date(df$date)
+summary(df$new_cases)
+summary(df$new_deaths)
+```
+
+## Florida's Battle with COVID-19
+
+```{r}
+df$SMAC <- movingAverage(df$new_cases,14)
+df$SMAD <- movingAverage(df$new_deaths,14)
+```
+
+### Plot of Cases and Deaths by Date
+
+```{r}
+plot(df$date,df$new_cases,col="red",main="Florida's COVID-19 Cases",type="b")
+lines(df$date,df$SMAC,col="blue")
+grid(col="black")
+```
+
+```{r}
+plot(df$date,df$new_deaths,col="red",main="Florida's COVID-19 Deaths",type="b")
+lines(df$date,df$SMAD,col="blue")
+grid(col="black")
+```
+```{r}
+df$Monthly <- as.Date(cut(df$date,
+  breaks = "month"))
+df$Weekly <- as.Date(cut(df$date,
+  breaks = "week",
+  start.on.monday = FALSE))
+
+```
+
+```{r}
+Weekly_Cases <- aggregate(new_cases~Weekly,df,FUN=sum)
+Weekly_Deaths <- aggregate(new_deaths~Weekly,df,FUN=sum)
+
+```
+```{r}
+barplot(new_cases ~Weekly,data=Weekly_Cases,main="Florida's Weekly Cases")
+grid(col="black")
+barplot(new_deaths ~Weekly,data=Weekly_Deaths,main="Florida's Weekly  Deaths")
+grid(col="black")
+```
+
+```{r}
+
+Monthly_Cases <- aggregate(new_cases~Monthly,df,FUN=sum)
+Monthly_Deaths <- aggregate(new_deaths~Monthly,df,FUN=sum)
+```
+```{r}
+barplot(new_cases ~Monthly,data=Monthly_Cases,main="Spain's Monthly Total Cases")
+grid(col="black")
+barplot(new_deaths ~Monthly,data=Monthly_Deaths,main="Spain's Monthly Total Deaths")
+grid(col="black")
+```
