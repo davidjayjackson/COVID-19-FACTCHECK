@@ -1,0 +1,89 @@
+---
+title: "20% Increase in COVID-19 Mortality Rate"
+author: "David J Jackson"
+date: "9/1/2020"
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(RSQLite)
+```
+```{r}
+rm(list=ls())
+source("../DATA/movavg.R")
+```
+```{r}
+db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+```
+```{r}
+df <- dbGetQuery(db,"select date,TotalCases,TotalDeaths,new_cases,new_deaths from  STATESDAILY")
+df$date <- as.Date(df$date)
+df<- df[order(df$date,decreasing = FALSE),]
+```
+
+```{r}
+df$Monthly <- as.Date(cut(df$date,
+  breaks = "month"))
+df$Weekly <- as.Date(cut(df$date,
+  breaks = "week",
+  start.on.monday = FALSE)) # changes weekly break point to Sunday
+
+```
+
+```{r}
+total_cases <- aggregate(TotalCases~date,data=df,FUN=sum)
+total_deaths <- aggregate(TotalDeaths~date,data=df,FUN=sum)
+```
+
+
+### Plotting Total Cases and Total Deaths : Jan 22, 2020 - Aug. 31, 2020
+
+```{r}
+plot(total_cases$date,total_cases$TotalCases,type="l",main="Total US COVID-19 Cases")
+grid(col="black")
+
+plot(total_deaths$date,total_deaths$TotalDeaths,type="l",main="Total US COVID-19 Cases")
+grid(col="black")
+```
+
+
+### Plot Daily Total Cases and Deaths
+
+
+```{r}
+new_cases <- aggregate(new_cases~date,data=df,FUN=sum)
+new_deaths <- aggregate(new_deaths~date,data=df,FUN=sum)
+```
+
+
+```{r}
+new_cases <- subset(new_cases,date >="2020-04-01")
+new_deaths <- subset(new_deaths,date >="2020-04-01")
+plot(new_cases$date,new_cases$new_cases,type="l",main="Total US COVID-19 Cases by Date")
+grid(col="black")
+
+plot(new_deaths$date,new_deaths$new_deaths,type="l",main="Total US COVID-19 Deaths by Date")
+grid(col="black")
+```
+
+```{r}
+monthly_cases <- aggregate(new_cases~Monthly,data=df,FUN=sum)
+monthly_deaths <- aggregate(new_deaths~Monthly,data=df,FUN=sum)
+monthly_cases <- subset(monthly_cases,Monthly >="2020-04-01")
+monthly_deaths <- subset(monthly_deaths,Monthly >="2020-04-01")
+```
+
+### Monthly COVID-19 Cases and  Deaths
+
+```{r}
+barplot(new_cases ~Monthly,data=monthly_cases,main=" Monthly Cases",xlab="(For August 22,2020)",ylab="Cases")
+grid(col="black")
+```
+```{r}
+barplot(new_deaths ~Monthly,data=monthly_deaths,main=" Monthly Deaths",xlab="(For August 22,2020)",ylab="Cases")
+grid(col="black")
+```
