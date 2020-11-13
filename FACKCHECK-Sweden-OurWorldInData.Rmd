@@ -1,0 +1,81 @@
+---
+title: 'FACTCHECK: Sweden COVID-19'
+author: "David RJ Jackson"
+date: "11/13/2020"
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message = FALSE,error = FALSE)
+library(ggplot2)
+library(scales)
+library(RSQLite)
+theme_set(theme_linedraw() + theme(panel.grid = element_line(linetype = 'dashed')))
+```
+
+### Import Data from ECDPC(SQLite3)
+
+```{r}
+rm(list=ls())
+source("../DATA/movavg.R")
+
+db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+
+VI <- dbGetQuery(db,"select * from  ECDC where Countries='Sweden'")
+VI$Reported <- as.Date(VI$Reported)
+VI <-  VI[order(VI$Reported),]
+summary(VI$Cases)
+summary(VI$Deaths)
+```
+```{r}
+ggplot(VI) + geom_line(aes(x=Reported,y=Deaths,col="Deats")) +
+  geom_smooth(aes(x=Reported,y=Deaths,col="Loess"),span=0.25) +
+  labs(title="Sweden:  Daily Covid-19 Deaths by Date",subtitle = "(Source: European CDPC")
+```
+
+
+### Import Data from John Hopkins (SQLite3)
+
+```{r}
+SE <- dbGetQuery(db,"select * from  JHUDATA where country='Sweden'")
+SE$date <- as.Date(SE$date)
+SE <-  SE[order(SE$date),]
+Diff <- diff(SE$deaths,lag=1)
+Diff <- as.data.frame(Diff)
+Diff$Ymd <- seq(from=as.Date("2020-01-22"),to=as.Date("2020-11-11"),by=1)
+##
+
+
+```
+```{r}
+ggplot(Diff,aes(x=Ymd,y=Diff)) +geom_line() +
+  geom_smooth(span=0.25) +
+  labs(title="Sweden Daily Deaths by Date",caption = "(Source: John Hopkins University", y="Daily Deaths")
+```
+
+### Combine Daily Deaths from ECDPC and John Hopkins
+
+```{r}
+ggplot(VI) + geom_line(aes(x=Reported,y=Deaths,col="ECDPC")) +
+  geom_line(data=Diff,aes(x=Ymd,y=Diff,col="JHU")) +
+  labs(title="Sweden Combinde JHU/ECDPC Deaths by Day")
+  
+ggplot(VI) + geom_smooth(aes(x=Reported,y=Deaths,col="ECDPC"),span=0.25) +
+  geom_smooth(data=Diff,aes(x=Ymd,y=Diff,col="JHU"),span=0.25) +
+  labs(title="Sweden Combinde JHU/ECDPC Deaths by Day",subtitle = "(Using Loess fitted curve)")
+```
+
+### Cumulative Cases and Deaths
+
+```{r}
+ggplot(SE,aes(x=date,y=confirmed)) + geom_line() +
+  labs(title="Sweden Cumulative Cases by Date",subtitle="(Source: John Hopkins Uni)")
+
+ggplot(SE,aes(x=date,y=deaths)) + geom_line() +
+  labs(title="Sweden Cumulative Deaths by Date",subtitle="(Source: John Hopkins Uni)")
+
+```
+

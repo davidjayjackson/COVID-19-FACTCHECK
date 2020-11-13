@@ -1,5 +1,5 @@
 ---
-title: "20% Increase in COVID-19 Mortality Rate"
+title: "NYTimes Real COVID-19 Deaths"
 author: "David J Jackson"
 date: "9/1/2020"
 output: 
@@ -37,10 +37,13 @@ df$Weekly <- as.Date(cut(df$date,
 ```{r}
 total_cases <- aggregate(TotalCases~date,data=df,FUN=sum)
 total_deaths <- aggregate(TotalDeaths~date,data=df,FUN=sum)
+
+accum_cases <- aggregate(TotalCases~Weekly,data=df,FUN=sum)
+accum_deaths <- aggregate(TotalDeaths~Weekly,data=df,FUN=sum)
 ```
+### New York Times, "Tracking the Real Coronavirus Death Toll in the United States"
 
-
-### Plotting Total Cases and Total Deaths : Jan 22, 2020 - Aug. 31, 2020
+#### Plotting Total Cases and Total Deaths : Jan 22, 2020 - Aug. 31, 2020
 
 ```{r}
 plot(total_cases$date,total_cases$TotalCases,type="l",main="Total US COVID-19 Cases")
@@ -49,9 +52,16 @@ grid(col="black")
 plot(total_deaths$date,total_deaths$TotalDeaths,type="l",main="Total US COVID-19 Cases")
 grid(col="black")
 ```
+```{r}
+barplot(TotalCases ~Weekly,data=accum_cases,main=" Week Accum Cases",xlab="(For August 31,2020)",ylab="Cases")
+grid(col="black")
+```
+```{r}
+barplot(TotalDeaths ~Weekly,data=accum_deaths,main=" Monthly Deaths",xlab="(For August 31,2020)",ylab="Cases")
+grid(col="black")
+```
 
-
-### Plot Daily Total Cases and Deaths
+#### Plot Daily Total Cases and Deaths
 
 
 ```{r}
@@ -77,7 +87,7 @@ monthly_cases <- subset(monthly_cases,Monthly >="2020-04-01")
 monthly_deaths <- subset(monthly_deaths,Monthly >="2020-04-01")
 ```
 
-### Monthly COVID-19 Cases and  Deaths
+#### Monthly COVID-19 Cases and  Deaths
 
 ```{r}
 barplot(new_cases ~Monthly,data=monthly_cases,main=" Monthly Cases",xlab="(For August 22,2020)",ylab="Cases")
